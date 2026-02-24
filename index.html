@@ -1,34 +1,92 @@
 <!DOCTYPE html>
-<html>
+<html lang="ja">
 <head>
-<meta charset="utf-8">
-<script>
-function test() {
-    navigator.geolocation.getCurrentPosition(test2);
-}
-
-function test2(position) {
-
-    var geo_text = "緯度:" + position.coords.latitude + "\n";
-    geo_text += "経度:" + position.coords.longitude + "\n";
-    geo_text += "高度:" + position.coords.altitude + "\n";
-    geo_text += "位置精度:" + position.coords.accuracy + "\n";
-    geo_text += "高度精度:" + position.coords.altitudeAccuracy  + "\n";
-    geo_text += "移動方向:" + position.coords.heading + "\n";
-    geo_text += "速度:" + position.coords.speed + "\n";
-
-    var date = new Date(position.timestamp);
-
-    geo_text += "取得時刻:" + date.toLocaleString() + "\n";
-
-    alert(geo_text);
-
-}
-</script>
+<meta charset="UTF-8">
+<title>Random Walking Route Generator</title>
 </head>
 <body>
 
-<button onclick="test()">test</button>
+<h2>ランダム散歩ルート生成</h2>
+
+<label>距離 (km): </label>
+<input type="number" id="distance" value="10" step="0.1">
+<button onclick="generateRoute()">ルート生成</button>
+
+<p id="output"></p>
+
+<script>
+function kiloToDeg(ido_keido) {
+    const ido = ido_keido[0];
+    const keido = ido_keido[1];
+    const keido_u = 91;
+    const ido_u = 111;
+
+    const ido_deg = ido / ido_u;
+    const keido_deg = keido / keido_u;
+
+    return [ido_deg, keido_deg];
+}
+
+function generateRoute() {
+
+    // ユーザ位置取得
+    navigator.geolocation.getCurrentPosition(function(position) {
+
+        const start = [
+            position.coords.latitude,
+            position.coords.longitude
+        ];
+
+        const circle = parseFloat(document.getElementById("distance").value);
+
+        const houi = Math.random() * 2.0 * Math.PI;
+        const r = circle / 2.0 / Math.PI;
+
+        const center = [
+            r * Math.cos(houi),
+            r * Math.sin(houi)
+        ];
+
+        const far = [center[0] * 2, center[1] * 2];
+
+        const right = [
+            center[0] + r * Math.cos(houi + Math.PI / 2.0),
+            center[1] + r * Math.sin(houi + Math.PI / 2.0)
+        ];
+
+        const left = [
+            center[0] + r * Math.cos(houi - Math.PI / 2.0),
+            center[1] + r * Math.sin(houi - Math.PI / 2.0)
+        ];
+
+        let far_deg = kiloToDeg(far);
+        let right_deg = kiloToDeg(right);
+        let left_deg = kiloToDeg(left);
+
+        far_deg = [far_deg[0] + start[0], far_deg[1] + start[1]];
+        right_deg = [right_deg[0] + start[0], right_deg[1] + start[1]];
+        left_deg = [left_deg[0] + start[0], left_deg[1] + start[1]];
+
+        const URL = `https://www.google.com/maps/dir/?api=1&origin=${start[0]},${start[1]}&destination=${start[0]},${start[1]}&waypoints=${left_deg[0]},${left_deg[1]}|${far_deg[0]},${far_deg[1]}|${right_deg[0]},${right_deg[1]}&travelmode=walking`;
+
+        console.log("houi:", houi);
+        console.log("r:", r);
+        console.log("center:", center);
+        console.log("far:", far);
+        console.log("right:", right);
+        console.log("far_deg:", far_deg);
+        console.log("right_deg:", right_deg);
+        console.log("left_deg:", left_deg);
+        console.log(URL);
+
+        document.getElementById("output").innerHTML =
+            `<a href="${URL}" target="_blank">Google Mapsで開く</a>`;
+
+    }, function(error) {
+        alert("位置情報の取得に失敗しました。ブラウザの位置情報を許可してください。");
+    });
+}
+</script>
 
 </body>
 </html>
