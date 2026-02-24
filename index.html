@@ -12,8 +12,6 @@
 <input type="number" id="distance" value="10" step="0.1">
 <button onclick="generateRoute()">ルート生成</button>
 
-<p id="output"></p>
-
 <script>
 function kiloToDeg(ido_keido) {
     const ido = ido_keido[0];
@@ -21,15 +19,11 @@ function kiloToDeg(ido_keido) {
     const keido_u = 91;
     const ido_u = 111;
 
-    const ido_deg = ido / ido_u;
-    const keido_deg = keido / keido_u;
-
-    return [ido_deg, keido_deg];
+    return [ido / ido_u, keido / keido_u];
 }
 
 function generateRoute() {
 
-    // ユーザ位置取得
     navigator.geolocation.getCurrentPosition(function(position) {
 
         const start = [
@@ -69,18 +63,8 @@ function generateRoute() {
 
         const URL = `https://www.google.com/maps/dir/?api=1&origin=${start[0]},${start[1]}&destination=${start[0]},${start[1]}&waypoints=${left_deg[0]},${left_deg[1]}|${far_deg[0]},${far_deg[1]}|${right_deg[0]},${right_deg[1]}&travelmode=walking`;
 
-        console.log("houi:", houi);
-        console.log("r:", r);
-        console.log("center:", center);
-        console.log("far:", far);
-        console.log("right:", right);
-        console.log("far_deg:", far_deg);
-        console.log("right_deg:", right_deg);
-        console.log("left_deg:", left_deg);
-        console.log(URL);
-
-        document.getElementById("output").innerHTML =
-            `<a href="${URL}" target="_blank">Google Mapsで開く</a>`;
+        // ✅ 直接リダイレクト
+        window.location.href = URL;
 
     }, function(error) {
         alert("位置情報の取得に失敗しました。ブラウザの位置情報を許可してください。");
